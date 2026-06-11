@@ -1,32 +1,32 @@
 {
   "schemaVersion": 1,
-  "id": "cheatutils",
+  "id": "sodiumpp",
   "version": "${version}",
 
-  "name": "CheatUtils",
+  "name": "sodiumpp",
   "icon": "web/images/favicon.png",
-  "description": "Open http://localhost:5005/ in your browser to access mod settings.\nYou can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/cheatutils\nSource code: https://github.com/Zergatul/cheatutils",
+  "description": "Open http://localhost:5005/ in your browser to access mod settings.\nYou can find tutorial videos on curseforge page: https://www.curseforge.com/minecraft/mc-mods/sodiumpp\nSource code: https://github.com/dimsteams/sodiumpp",
   "authors": [
-    "Zergatul",
+    "dimsteams",
     "SomeRandomDude-a"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/cheatutils",
-    "sources": "https://github.com/Zergatul/cheatutils",
-    "issues": "https://github.com/Zergatul/cheatutils/issues"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/sodiumpp",
+    "sources": "https://github.com/dimsteams/sodiumpp",
+    "issues": "https://github.com/dimsteams/sodiumpp/issues"
   },
 
   "license": "MIT",
 
   "environment": "client",
   "entrypoints": {
-    "client": ["com.zergatul.cheatutils.fabric.ModMain"]
+    "client": ["com.dimsteams.sodiumpp.fabric.ModMain"]
   },
-  "accessWidener": "cheatutils.classtweaker",
+  "accessWidener": "sodiumpp.classtweaker",
   "mixins": [
-    "cheatutils.common.mixins.json",
-    "cheatutils.iris.mixins.json",
-    "cheatutils.fabric.mixins.json"
+    "sodiumpp.common.mixins.json",
+    "sodiumpp.iris.mixins.json",
+    "sodiumpp.fabric.mixins.json"
   ],
 
   "depends": {

@@ -1,9 +1,9 @@
 plugins {
     id 'net.fabricmc.fabric-loom' version "${loom_version}"
-    id 'cheatutils'
+    id 'sodiumpp'
 }
 
-ext.mod_version = cheatutils.getModVersion()
+ext.mod_version = sodiumpp.getModVersion()
 
 group = project.maven_group
 version = project.mod_version
@@ -13,7 +13,7 @@ base {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/cheatutils.classtweaker")
+    accessWidenerPath = file("src/main/resources/sodiumpp.classtweaker")
 }
 
 dependencies {

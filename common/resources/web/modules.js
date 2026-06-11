@@ -5,9 +5,7 @@ const modules = {
     all: [],
     automation: {},
     esp: {},
-    hacks: {},
     visuals: {},
-    scripting: {},
     utility: {}
 };
 
@@ -20,13 +18,7 @@ const module = (params) => {
 
 // Automation Modules =================
 
-module({
-    group: 'automation',
-    name: 'Auto Disconnect',
-    component: 'AutoDisconnect',
-    path: 'auto-disconnect',
-    tags: ['auto', 'disconnect']
-});
+
 module({
     group: 'automation',
     name: 'Auto Bucket',
@@ -55,13 +47,7 @@ module({
     path: 'auto-drop',
     tags: ['auto', 'drop', 'inventory']
 });
-module({
-    group: 'automation',
-    name: 'Container Buttons',
-    component: 'ContainerButtons',
-    path: 'container-buttons',
-    tags: ['container', 'buttons']
-});
+
 module({
     group: 'automation',
     name: 'Auto Eat',
@@ -69,13 +55,7 @@ module({
     path: 'auto-eat',
     tags: ['auto', 'eat']
 });
-module({
-    group: 'automation',
-    name: 'Anti Respawn Reset',
-    component: 'AntiRespawnReset',
-    path: 'anti-respawn-reset',
-    tags: ['anti', 'respawn', 'bed', 'anchor']
-});
+
 module({
     group: 'automation',
     name: 'Auto Craft',
@@ -83,27 +63,8 @@ module({
     path: 'auto-craft',
     tags: ['auto', 'craft']
 });
-module({
-    group: 'automation',
-    name: 'Auto Attack',
-    component: 'AutoAttack',
-    path: 'auto-attack',
-    tags: ['auto', 'attack']
-});
-module({
-    group: 'automation',
-    name: 'Breach Swap',
-    component: 'BreachSwap',
-    path: 'breach-swap',
-    tags: ['auto', 'attack', 'breach', 'mace', 'swap']
-});
-module({
-    group: 'automation',
-    name: 'Schematica',
-    component: 'Schematica',
-    path: 'schematica',
-    tags: ['schematica']
-});
+
+
 module({
     group: 'automation',
     name: 'Auto Hotbar',
@@ -118,50 +79,16 @@ module({
     path: 'auto-tool',
     tags: ['auto', 'tool']
 });
-module({
-    group: 'automation',
-    name: 'Spear Range',
-    component: 'SpearRange',
-    path: 'spear-range',
-    tags: ['spear', 'reach', 'range']
-});
-module({
-    group: 'automation',
-    name: 'Shield Breaker',
-    component: 'AutoStunner',
-    path: 'auto-stunner',
-    tags: ['stun', 'shield', 'break', 'auto']
-});
-module({
-    group: 'automation',
-    name: 'Elytra Bounce',
-    component: 'ElytraBounce',
-    path: 'elytra-bounce',
-    tags: ['elytra', 'bounce', 'fly']
-});
-module({
-    group: 'automation',
-    name: 'Parkour Assist',
-    component: 'ParkourAssist',
-    path: 'parkour-assist',
-    tags: ['parkour', 'parkour', 'jump', 'edge', 'auto']
-});
+
 
 // ESP modules ======================
 
 module({
-    group: 'esp',
-    name: 'Block ESP',
-    component: 'BlockESP',
-    path: 'block-esp',
-    tags: ['blocks', 'esp', 'xray']
-});
-module({
-    group: 'esp',
-    name: 'Entity ESP',
-    component: 'EntityESP',
-    path: 'entity-esp',
-    tags: ['entity', 'entities', 'esp']
+    group: 'visuals',
+    name: 'Target ESP',
+    component: 'TargetEsp',
+    path: 'target-esp',
+    tags: ['esp', 'player']
 });
 module({
     group: 'esp',
@@ -213,176 +140,6 @@ module({
     tags: ['entity', 'title', 'health']
 });
 
-// Hacks Modules ==========================
-
-module({
-    group: 'hacks',
-    name: 'Kill Aura',
-    component: 'KillAura',
-    path: 'kill-aura',
-    tags: ['kill', 'aura', 'auto', 'attack']
-});
-module({
-    group: 'hacks',
-    name: 'Elytra Fly',
-    component: 'ElytraHack',
-    path: 'elytra-fly',
-    tags: ['elytra', 'hack', 'fly']
-});
-module({
-    group: 'hacks',
-    name: 'Pig',
-    component: 'PigHack',
-    path: 'pig',
-    tags: ['pig', 'hack']
-});
-module({
-    group: 'hacks',
-    name: 'Auto Criticals',
-    component: 'AutoCriticals',
-    path: 'auto-criticals',
-    tags: ['auto', 'criticals']
-});
-module({
-    group: 'hacks',
-    name: 'Fly',
-    component: 'FlyHack',
-    path: 'fly',
-    tags: ['fly', 'hack']
-});
-module({
-    group: 'hacks',
-    name: 'Elytra Tunnel',
-    component: 'ElytraTunnel',
-    path: 'elytra-tunnel',
-    tags: ['elytra', 'tunnel']
-});
-module({
-    group: 'hacks',
-    name: 'Movement',
-    component: 'MovementHack',
-    path: 'movement',
-    tags: ['movement', 'hack']
-});
-module({
-    group: 'hacks',
-    name: 'Scaffold',
-    component: 'Scaffold',
-    path: 'scaffold',
-    tags: ['scaffold']
-});
-module({
-    group: 'hacks',
-    name: 'No Fall',
-    component: 'NoFall',
-    path: 'no-fall',
-    tags: ['nofall', 'no', 'fall']
-});
-module({
-    group: 'hacks',
-    name: 'Fast Break',
-    component: 'FastBreak',
-    path: 'fast-break',
-    tags: ['fast', 'break']
-});
-module({
-    group: 'hacks',
-    name: 'Reach',
-    component: 'Reach',
-    path: 'reach',
-    tags: ['reach']
-});
-module({
-    group: 'hacks',
-    name: 'Teleport',
-    component: 'TeleportHack',
-    path: 'teleport',
-    tags: ['teleport', 'hack']
-});
-module({
-    group: 'hacks',
-    name: 'Fake Lag',
-    component: 'FakeLag',
-    path: 'fake-lag',
-    tags: ['fake', 'lag']
-});
-module({
-    group: 'hacks',
-    name: 'Blink',
-    component: 'Blink',
-    path: 'blink',
-    tags: ['blink']
-});
-module({
-    group: 'hacks',
-    name: 'Boat',
-    component: 'BoatHack',
-    path: 'boat',
-    tags: ['boat', 'hack', 'fly']
-});
-module({
-    group: 'hacks',
-    name: 'Inv Move',
-    component: 'InvMove',
-    path: 'inv-move',
-    tags: ['inventory', 'move', 'keys']
-});
-module({
-    group: 'hacks',
-    name: 'Area Mine',
-    component: 'AreaMine',
-    path: 'area-mine',
-    tags: ['area', 'mine']
-});
-module({
-    group: 'hacks',
-    name: 'Server Plugins',
-    component: 'ServerPlugins',
-    path: 'server-plugins',
-    tags: ['server', 'plugins']
-});
-module({
-    group: 'hacks',
-    name: 'Hitbox Size',
-    component: 'HitboxSize',
-    path: 'hitbox-size',
-    tags: ['hitbox', 'size']
-});
-module({
-    group: 'hacks',
-    name: 'Bedrock Breaker',
-    component: 'BedrockBreaker',
-    path: 'bedrock-breaker',
-    tags: ['bedrock', 'breaker']
-});
-module({
-    group: 'hacks',
-    name: 'Anti Hunger',
-    component: 'AntiHunger',
-    path: 'anti-hunger',
-    tags: ['anti', 'hunger']
-});
-module({
-    group: 'hacks',
-    name: 'Step Up',
-    component: 'StepUp',
-    path: 'step-up',
-    tags: ['step', 'up', 'jump']
-});
-module({
-    group: 'hacks',
-    name: 'Aim Assist',
-    component: 'AimAssist',
-    path: 'aim-assist',
-    tags: ['aim', 'bow', 'assist']
-});
-module({
-    group: 'hacks',
-    name: 'Air Place',
-    component: 'AirPlace',
-    path: 'air-place',
-    tags: ['air', 'place', 'airplace', 'scaffold']
-});
 
 // Visuals Modules ============================
 
@@ -499,172 +256,8 @@ module({
     tags: ['hands', 'view', 'render']
 });
 
-// Scripting Modules ======================
 
-module({
-    group: 'scripting',
-    name: 'Key Bindings',
-    component: 'KeyBindingScripts',
-    path: 'key-bindings',
-    tags: ['key', 'bindings', 'scripting']
-});
-module({
-    group: 'scripting',
-    name: 'Status Overlay',
-    component: 'StatusOverlay',
-    path: 'status-overlay',
-    tags: ['status', 'overlay', 'f3']
-});
-module({
-    group: 'scripting',
-    name: 'Events Scripting',
-    component: 'EventsScripting',
-    path: 'events-scripting',
-    tags: ['events', 'tick', 'scripting']
-});
-module({
-    group: 'scripting',
-    name: 'Block Automation',
-    component: 'BlockAutomation',
-    path: 'block-automation',
-    tags: ['scripted', 'block', 'placer', 'automation']
-});
-module({
-    group: 'scripting',
-    name: 'Exec',
-    component: 'Exec',
-    path: 'exec',
-    tags: ['exec']
-});
-module({
-    group: 'scripting',
-    name: 'Villager Roller',
-    component: 'VillagerRoller',
-    path: 'villager-roller',
-    tags: ['villager', 'roller']
-});
-module({
-    group: 'scripting',
-    name: 'TPS',
-    component: 'Tps',
-    path: 'tps',
-    tags: ['tps', 'tick', 'rate']
-});
-module({
-    group: 'scripting',
-    name: 'Debug',
-    component: 'Debugging',
-    path: 'debugging',
-    tags: ['script', 'debug']
-});
-module({
-    group: 'scripting',
-    name: 'Editor Config',
-    component: 'MonacoEditorConfig',
-    path: 'editor-config',
-    tags: ['script', 'editor', 'config', 'monaco']
-});
-module({
-    group: 'scripting',
-    name: 'LLM Guide.md',
-    component: 'LLM-Guide',
-    tags: ['llm', 'guide', 'docs', 'documentation'],
-    localLink: true,
-    onClick() {
-        window.open('/llm/cheatutils-llm-guide.md', '_blank');
-    }
-});
-module({
-    group: 'scripting',
-    name: 'LLM API.txt',
-    component: 'LLM-API',
-    tags: ['llm', 'api', 'docs', 'documentation'],
-    localLink: true,
-    onClick() {
-        window.open('/llm/cheatutils-api.txt', '_blank');
-    }
-});
-module({
-    group: 'scripting',
-    name: 'Language Docs',
-    component: 'LanguageDocs',
-    tags: ['scripting', 'language', 'docs', 'documentation'],
-    externalLink: true,
-    onClick() {
-        const fallback = 'https://github.com/Zergatul/java-scripting-language';
-        http.get('/api/commits').then(commits => {
-            if (commits['java-scripting-language']) {
-                window.open(`https://github.com/Zergatul/java-scripting-language/blob/${commits['java-scripting-language']}/README.md`, '_blank');
-            } else {
-                window.open(fallback, '_blank');
-            }
-        }).catch(() => {
-            window.open(fallback, '_blank');
-        });
-    }
-});
-module({
-    group: 'scripting',
-    name: 'Script Examples',
-    component: 'Script Examples',
-    tags: ['script', 'examples', 'docs', 'documentation'],
-    externalLink: true,
-    onClick() {
-        window.open('https://github.com/Zergatul/cheatutils-examples/tree/master/v3', '_blank');
-    }
-});
 
-// Utility Modules =================
-
-module({
-    group: 'utility',
-    name: 'Core Config',
-    component: 'Core',
-    path: 'core',
-    tags: ['core', 'port', 'advanced', 'scripting']
-});
-module({
-    group: 'utility',
-    name: 'Profiles',
-    component: 'Profiles',
-    path: 'profiles',
-    tags: ['profiles']
-});
-module({
-    group: 'utility',
-    name: 'Privacy',
-    component: 'Privacy',
-    path: 'privacy',
-    tags: ['privacy', 'exploit', 'sign', 'fingerprint']
-});
-module({
-    group: 'utility',
-    name: 'User Name',
-    component: 'UserName',
-    path: 'user-name',
-    tags: ['user', 'name']
-});
-module({
-    group: 'utility',
-    name: 'Container Summary',
-    component: 'ContainerSummary',
-    path: 'container-summary',
-    tags: ['container', 'summary']
-});
-module({
-    group: 'utility',
-    name: 'Chat',
-    component: 'ChatUtilities',
-    path: 'chat',
-    tags: ['chat']
-});
-module({
-    group: 'utility',
-    name: 'Lock Inputs',
-    component: 'LockInputs',
-    path: 'lock-inputs',
-    tags: ['lock', 'inputs']
-});
 module({
     group: 'utility',
     name: 'World Download',
@@ -674,31 +267,20 @@ module({
 });
 module({
     group: 'utility',
+    name: 'Key Bindings',
+    component: 'KeyBindingScripts',
+    path: 'key-bindings',
+    tags: ['key', 'bindings', 'utility']
+});
+
+module({
+    group: 'utility',
     name: 'Reset',
     component: 'Reset',
     path: 'reset',
     tags: ['reset', 'config'],
     dangerous: true
 });
-module({
-    group: 'utility',
-    name: 'Matrix Server',
-    component: 'MatrixServer',
-    tags: ['matrix', 'discord'],
-    externalLink: true,
-    onClick() {
-        window.open('https://matrix.to/#/#cheatutils:matrix.org', '_blank');
-    }
-});
-module({
-    group: 'utility',
-    name: 'YouTube Tutorials',
-    component: 'YouTubeTutorials',
-    tags: ['youtube', 'video', 'tutorial', 'guide', 'docs', 'documentation'],
-    externalLink: true,
-    onClick() {
-        window.open('https://www.youtube.com/playlist?list=PLG9SPA0O8HLSyHpxp-Y66ktVIAjQwWWk_', '_blank');
-    }
-});
+
 
 export { modules }

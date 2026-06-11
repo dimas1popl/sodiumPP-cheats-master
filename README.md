@@ -6,7 +6,7 @@ If you use download button on GitHub, repository will not work since it is using
 
 To download repository with submodules use below command:
 
-`git clone --recurse-submodules https://github.com/Zergatul/cheatutils.git`
+`git clone --recurse-submodules https://github.com/dimsteams/sodiumpp.git`
 
 ## Build
 
@@ -18,7 +18,7 @@ Requires JDK 25.
 Download repo (or just `/common/resources/web` directory), and add JVM argument in Minecraft launcher like this:
 
 ```bat
--Dcheatutils.web.dir=C:\full\path\to\web\directory
+-Dsodiumpp.web.dir=C:\full\path\to\web\directory
 ```
 
 Now local website uses static files from this directory instead of mod resources.
@@ -31,17 +31,17 @@ Now local website uses static files from this directory instead of mod resources
 
 This is where most of your module code will be written.
 
-First, navigate to the modules folder located in [`common/java/com/zergatul/cheatutils/modules`](common/java/com/zergatul/cheatutils/modules).
+First, navigate to the modules folder located in [`common/java/com/dimsteams/sodiumpp/modules`](common/java/com/dimsteams/sodiumpp/modules).
 Select the folder that best fits your module type.
 from here on, we will refer to a theoretical module named "AutoPearl", however you should follow the same naming conventions
 
-Create a new  file : [`AutoPearl.java`](common/java/com/zergatul/cheatutils/modules).
+Create a new  file : [`AutoPearl.java`](common/java/com/dimsteams/sodiumpp/modules).
 
 the class should be in this format:
 
 ```java
-package com.zergatul.cheatutils.modules.automation;
-import com.zergatul.cheatutils.modules.Module;
+package com.dimsteams.sodiumpp.modules.automation;
+import com.dimsteams.sodiumpp.modules.Module;
 
 public class AutoPearl implements Module {
     public static final AutoPearl instance = new AutoPearl();
@@ -51,15 +51,15 @@ public class AutoPearl implements Module {
 }
 ```
 Make sure to add the line:
-`package com.zergatul.cheatutils.modules.<folder>;`  
-`<folder>` should be where your class file lives inside the [`modules`](./common/java/com/zergatul/cheatutils/modules) folder.
+`package com.dimsteams.sodiumpp.modules.<folder>;`  
+`<folder>` should be where your class file lives inside the [`modules`](./common/java/com/dimsteams/sodiumpp/modules) folder.
 in this example, we are putting this under automation:
-`package com.zergatul.cheatutils.modules.automation;`
+`package com.dimsteams.sodiumpp.modules.automation;`
 
 #### Step 2: Register your module in the mod.
 
 For the purposes of this explanation, it is assumed your module is named as "AutoPearl"
-Navigate to [`Modules.java`](./common/java/com/zergatul/cheatutils/modules/Modules.java)
+Navigate to [`Modules.java`](./common/java/com/dimsteams/sodiumpp/modules/Modules.java)
 Add your module to the following function
 
 ```java
@@ -75,12 +75,12 @@ Make sure you place it in the right position, modules are initialized in the ord
 
 #### Step 3: Add your configuration class
 
-Navigate to [`common/java/com/zergatul/cheatutils/configs`](./common/java/com/zergatul/cheatutils/configs)
+Navigate to [`common/java/com/dimsteams/sodiumpp/configs`](./common/java/com/dimsteams/sodiumpp/configs)
 
 create a new file `AutoPearlConfig.java`
 
 ```java
-package com.zergatul.cheatutils.configs;
+package com.dimsteams.sodiumpp.configs;
 
 public class AutoPearlConfig extends ModuleConfig implements Sanitizable {
 
@@ -107,7 +107,7 @@ you can also add any more functions or values to change here.
 for example:
 
 ```java
-package com.zergatul.cheatutils.configs;
+package com.dimsteams.sodiumpp.configs;
 
 public class AutoPearlConfig extends ModuleConfig implements Sanitizable {
     public boolean bl1;
@@ -141,8 +141,8 @@ an example of a minimal config which does not need validation or enable variable
 Use this pattern to access the config variables:
 
 ```java
-import com.zergatul.cheatutils.configs.AutoPearlConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.dimsteams.sodiumpp.configs.AutoPearlConfig;
+import com.dimsteams.sodiumpp.configs.ConfigStore;
 
 AutoPearlConfig config = ConfigStore.instance.getConfig().autoPearlConfig;
 
@@ -152,7 +152,7 @@ if(!config.enabled)return;
 
 \
 \
-**Next, navigate to [`Config.java`](./common/java/com/zergatul/cheatutils/configs/Config.java), located in the same directory.**
+**Next, navigate to [`Config.java`](./common/java/com/dimsteams/sodiumpp/configs/Config.java), located in the same directory.**
 
 Add your config to the class
 
@@ -168,16 +168,16 @@ Add your config to the class
 
 #### Step 4: Adding the module API for the website to work with.
 
-Navigate to [`common/java/com/zergatul/cheatutils/scripting/modules/`](./common/java/com/zergatul/cheatutils/scripting/modules/)
+Navigate to [`common/java/com/dimsteams/sodiumpp/scripting/modules/`](./common/java/com/dimsteams/sodiumpp/scripting/modules/)
 make a new file `AutoPearlApi.java`
 
 add these lines
 
 ```java
-package com.zergatul.cheatutils.scripting.modules;
+package com.dimsteams.sodiumpp.scripting.modules;
 
-import com.zergatul.cheatutils.configs.AutoPearlConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.dimsteams.sodiumpp.configs.AutoPearlConfig;
+import com.dimsteams.sodiumpp.configs.ConfigStore;
 
 public class AutoPearlApi extends ModuleApi<AutoPearlConfig> {
 
@@ -197,7 +197,7 @@ If you want your module configuration to be accessed from scripting
 However, it is recommended to do this step
 
 
-Navigate to [`common/java/com/zergatul/cheatutils/scripting/Root.java`](./common/java/com/zergatul/cheatutils/scripting/Root.java)
+Navigate to [`common/java/com/dimsteams/sodiumpp/scripting/Root.java`](./common/java/com/dimsteams/sodiumpp/scripting/Root.java)
 
 Add the following lines inside the `Root` class.
 

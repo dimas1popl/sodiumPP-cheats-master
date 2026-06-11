@@ -4,7 +4,7 @@ import { withCss } from '/components/Loader.js'
 
 const monaco = await FallbackLoader.monaco();
 
-const languageId = 'cheatutils-scripting-language';
+const languageId = 'sodiumpp-scripting-language';
 const map = [];
 
 function getSettingsByModel(model) {

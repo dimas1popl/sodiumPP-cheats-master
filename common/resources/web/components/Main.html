@@ -9,17 +9,10 @@
             <module-button v-for="module in esp" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
         <div class="module-group">
-            <div class="module-group-header">Hacks</div>
-            <module-button v-for="module in hacks" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
-        </div>
-        <div class="module-group">
             <div class="module-group-header">Visuals</div>
             <module-button v-for="module in visuals" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
         </div>
-        <div class="module-group">
-            <div class="module-group-header">Scripting</div>
-            <module-button v-for="module in scripting" :module="module" :statuses="statuses" :filtered="filtered"></module-button>
-        </div>
+
         <div class="module-group">
             <div class="module-group-header">Utility</div>
             <module-button v-for="module in utility" :module="module" :statuses="statuses" :filtered="filtered"></module-button>

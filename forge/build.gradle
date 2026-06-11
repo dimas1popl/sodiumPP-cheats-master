@@ -3,12 +3,12 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'net.minecraftforge.gradle' version '[7.0.18,8)'
-    id 'cheatutils'
+    id 'sodiumpp'
 }
 
-def modVersion = cheatutils.getModVersion()
-def commonMixinsConfigOriginal = 'cheatutils.common.mixins.json'
-def commonMixinsConfigForge = 'cheatutils.common-forge-patched.mixins.json'
+def modVersion = sodiumpp.getModVersion()
+def commonMixinsConfigOriginal = 'sodiumpp.common.mixins.json'
+def commonMixinsConfigForge = 'sodiumpp.common-forge-patched.mixins.json'
 def generatedMixinsConfigDir = layout.buildDirectory.dir('generated/forge-mixins/resources')
 
 group = mod_group_id
@@ -26,8 +26,8 @@ minecraft {
         client {
             workingDir = layout.projectDirectory.dir('run')
             args "-mixin.config=${commonMixinsConfigForge}"
-            //args "-mixin.config=cheatutils.iris.mixins.json"
-            args "-mixin.config=cheatutils.forge.mixins.json"
+            //args "-mixin.config=sodiumpp.iris.mixins.json"
+            args "-mixin.config=sodiumpp.forge.mixins.json"
             systemProperty 'forge.logging.console.level', 'debug'
         }
     }
@@ -93,8 +93,8 @@ tasks.named('jar', Jar) {
 
     manifest {
         attributes([
-                // excluded "cheatutils.iris.mixins.json"
-                "MixinConfigs": "${commonMixinsConfigForge},cheatutils.forge.mixins.json"
+                // excluded "sodiumpp.iris.mixins.json"
+                "MixinConfigs": "${commonMixinsConfigForge},sodiumpp.forge.mixins.json"
         ])
     }
 }

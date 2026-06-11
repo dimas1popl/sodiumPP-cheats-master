@@ -17,9 +17,7 @@ export function createComponent(template) {
         setup() {
             const automation = ref(modules.automation);
             const esp = ref(modules.esp);
-            const hacks = ref(modules.hacks);
             const visuals = ref(modules.visuals);
-            const scripting = ref(modules.scripting);
             const utility = ref(modules.utility);
             const statuses = ref({});
             const generalInfo = ref({});
@@ -76,9 +74,7 @@ export function createComponent(template) {
             return {
                 automation,
                 esp,
-                hacks,
                 visuals,
-                scripting,
                 utility,
                 statuses,
                 generalInfo,

@@ -1,9 +1,9 @@
 body {
-    --color1: #122741;
-    --color2: #F8FAEB;
+    --color1: #4b0082;
+    --color2: #01a31c;
     --color3: #246673;
     --color4: #ABB5AC;
-    --color5: #B79246;
+    --color5: #F4C1C1;
     --color6: #919992;
     --color7: #317F35;
     --color8: #000000;
@@ -36,20 +36,32 @@ div.main-header > div {
     flex: 1;
 }
 
+/* ===== ИЗМЕНЕН ТОЛЬКО ЭТОТ БЛОК - НОВЫЙ КРАСИВЫЙ TITLE ===== */
 div.main-header > div.title {
     color: var(--color2);
     font-size: 2em;
     padding-left: 1.5em;
-}
-
-div.main-header > div.search {
-    justify-content: right;
-    padding-right: 1.5em;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
 }
 
 div.main-header div.title a,
 div.main-header div.title a:visited {
     color: var(--color2);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+div.main-header div.title a:hover {
+    color: var(--color7);
+    text-shadow: 0 0 8px rgba(49, 127, 53, 0.4);
+}
+/* ===== КОНЕЦ ИЗМЕНЕНИЙ ===== */
+
+div.main-header > div.search {
+    justify-content: right;
+    padding-right: 1.5em;
 }
 
 div.main-header > div.search > input {
@@ -60,10 +72,6 @@ div.main-header > div.search > input {
     padding-left: 0.5em;
     padding-right: 0.5em;
     width: 20em;
-}
-
-a, a:visited {
-    color: var(--color1);
 }
 
 a:hover {
@@ -297,23 +305,6 @@ table.main-table > tbody > tr > td > button {
     width: 100%;
 }
 
-/*button {
-    box-sizing: border-box;
-    border-radius: 10px;
-    border-width: 4px;
-    border-style: solid;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-weight: bold;
-    font-size: 14px;
-    height: 32px;
-}*/
-
-
-
-/*button + button {
-    margin-left: 16px;
-}*/
-
 kbd {
     border-radius: 3px;
     border-width: 1px;
@@ -492,6 +483,7 @@ ul.refs {
     overflow: auto;
 }
 
+
 ul.refs > li {
     display: flex;
     flex-direction: row;
@@ -583,4 +575,20 @@ span.hint {
     color: var(--color1);
     font-family: var(--font2);
     font-size: 0.7em;
+}
+/* Добавь в конец файла */
+
+/* Выбор модуля для клавиш */
+.keybind-module-selector {
+    margin-bottom: 1em;
+    padding: 0.5em;
+    background: var(--color3);
+    border-radius: 0.5em;
+}
+
+.keybind-module-selector select {
+    margin-left: 0.5em;
+    padding: 0.3em;
+    background: var(--color2);
+    border-radius: 0.3em;
 }

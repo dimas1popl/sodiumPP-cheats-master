@@ -256,7 +256,7 @@ export function createComponent(template) {
 
                     let anchor = document.createElement('a');
                     anchor.href = url;
-                    anchor.download = 'cheatutils' + extension;
+                    anchor.download = 'sodiumpp' + extension;
 
                     document.body.appendChild(anchor);
                     anchor.click();

@@ -1,7 +1,7 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
-issueTrackerURL="https://github.com/Zergatul/cheatutils/issues"
+issueTrackerURL="https://github.com/dimsteams/sodiumpp/issues"
 clientSideOnly=true
 accessTransformers=["META-INF/forge_at.cfg"]
 
@@ -9,7 +9,7 @@ accessTransformers=["META-INF/forge_at.cfg"]
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/cheatutils"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/sodiumpp"
 logoFile="web/images/favicon.png"
 authors="${mod_authors}"
 description='''${mod_description}'''
