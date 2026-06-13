@@ -1,0 +1,134 @@
+package com.dimsteams.sodiumpp.modules.visuals;
+
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.dimsteams.sodiumpp.common.Events;
+import com.dimsteams.sodiumpp.common.events.RenderWorldLastEvent;
+import com.dimsteams.sodiumpp.concurrent.TickEndExecutor;
+import com.dimsteams.sodiumpp.configs.ConfigStore;
+import com.dimsteams.sodiumpp.configs.WorldMarkersConfig;
+import com.dimsteams.sodiumpp.font.*;
+import com.dimsteams.sodiumpp.modules.esp.EspGlobal;
+import com.dimsteams.sodiumpp.ui.*;
+import com.dimsteams.sodiumpp.utils.ColorUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
+
+import java.util.concurrent.CompletableFuture;
+
+public class WorldMarkers implements FontBackendHolder {
+
+    public static final WorldMarkers instance = new WorldMarkers();
+
+    private final Minecraft mc = Minecraft.getInstance();
+
+    private boolean fontChanged;
+    private CompletableFuture<FontBackend> fontBackendFuture;
+    private FontRenderer fontRenderer;
+
+    private WorldMarkers() {
+        Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
+    }
+
+    @Override
+    public boolean uses(FontBackend backend) {
+        return fontRenderer != null && fontRenderer.uses(backend);
+    }
+
+    public void onFontChange() {
+        TickEndExecutor.instance.execute(() -> fontChanged = true);
+    }
+
+    private void onRenderWorldLast(RenderWorldLastEvent event) {
+        if (!EspGlobal.enabled) {
+            return;
+        }
+
+        WorldMarkersConfig config = ConfigStore.instance.getConfig().worldMarkersConfig;
+        if (!config.enabled) {
+            return;
+        }
+
+        if (fontChanged) {
+            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
+            // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
+            fontChanged = false;
+        }
+
+        if (fontBackendFuture != null) {
+            if (fontBackendFuture.isDone()) {
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontBackendFuture = null;
+            }
+        }
+
+        if (mc.level == null) {
+            return;
+        }
+
+        if (fontRenderer == null) {
+            return;
+        }
+
+        Vec3 view = event.getCameraPos();
+
+        int scale = mc.getWindow().getGuiScale();
+        int scrWidth = mc.getWindow().getWidth();
+        int scrHeight = mc.getWindow().getHeight();
+        int halfScrWidth = scrWidth / 2;
+        int halfScrHeight = scrHeight / 2;
+
+        Matrix4f matrix = new Matrix4f();
+        matrix.ortho(-halfScrWidth, scrWidth - halfScrWidth, scrHeight - halfScrHeight, -halfScrHeight, -1, 1);
+
+        RenderingContext context = new RenderingContext(matrix, scale);
+
+        GlStateManager._viewport(0, 0, scrWidth, scrHeight);
+
+        String dimension = mc.level.dimension().identifier().toString();
+        for (WorldMarkersConfig.Entry entry : config.entries) {
+            if (!entry.enabled) {
+                continue;
+            }
+            if (!dimension.equals(entry.dimension)) {
+                continue;
+            }
+
+            double x = entry.x - view.x;
+            double y = entry.y - view.y;
+            double z = entry.z - view.z;
+            if (x * x + y * y + z * z < entry.minDistance * entry.minDistance) {
+                continue;
+            }
+
+            Vector4f v1 = event.getViewRotation().transform(new Vector4f((float)x, (float)y, (float)z, 1));
+            Vector4f v2 = event.getProjection().transform(v1);
+            if (v2.z <= 0) {
+                continue; // behind
+            }
+
+            int xc = Math.round(v2.x / v2.w * halfScrWidth);
+            int yc = Math.round(-v2.y / v2.w * halfScrHeight);
+
+            int color = entry.color.getRGB();
+            int inverse = ColorUtils.inverse(color);
+
+            StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
+            FlexColumnElement flex = new FlexColumnElement();
+            flex.append(
+                    new DivisionElement()
+                            .setBackgroundColor(inverse & 0x40FFFFFF)
+                            .setBorderWidth(config.borderWidth)
+                            .setBorderColor(entry.color.getRGB())
+                            .setMargin(scale)
+                            .setContent(
+                                    new TextElement(fontRenderer, text)
+                                            .setCompactHeight(true)));
+            flex.append(
+                    new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
+
+            context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
+        }
+    }
+}

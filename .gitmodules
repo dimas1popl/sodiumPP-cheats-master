@@ -1,6 +1,0 @@
-[submodule "java-scripting-language"]
-	path = java-scripting-language
-	url = https://github.com/dimsteams/java-scripting-language.git
-[submodule "mixin-plugin"]
-	path = mixin-plugin
-	url = https://github.com/dimsteams/mixins.git

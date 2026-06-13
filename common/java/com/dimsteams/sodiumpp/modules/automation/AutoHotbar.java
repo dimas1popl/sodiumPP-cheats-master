@@ -1,0 +1,95 @@
+package com.dimsteams.sodiumpp.modules.automation;
+
+import com.dimsteams.sodiumpp.common.Events;
+import com.dimsteams.sodiumpp.configs.AutoHotbarConfig;
+import com.dimsteams.sodiumpp.configs.ConfigStore;
+import com.dimsteams.sodiumpp.modules.Module;
+import com.dimsteams.sodiumpp.utils.InventorySlot;
+import com.dimsteams.sodiumpp.utils.InventoryUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+
+public class AutoHotbar implements Module {
+
+    public static final AutoHotbar instance = new AutoHotbar();
+
+    private final Minecraft mc = Minecraft.getInstance();
+    private final ItemStack[] lastTickHotbar = new ItemStack[9];
+    private ItemStack lastTickOffhand;
+
+    private AutoHotbar() {
+        Events.ClientTickEnd.add(this::onClientTickEnd);
+        clear();
+    }
+
+    private void onClientTickEnd() {
+        if (mc.player == null) {
+            clear();
+            return;
+        }
+
+        AutoHotbarConfig config = ConfigStore.instance.getConfig().autoHotbarConfig;
+        if (!config.enabled) {
+            clear();
+            return;
+        }
+
+        if (mc.player.isUsingItem()) {
+            return;
+        }
+
+        Inventory inventory = mc.player.getInventory();
+        for (int hbSlot = 0; hbSlot < 9; hbSlot++) {
+            if (config.shouldRefill(hbSlot) && !lastTickHotbar[hbSlot].isEmpty()) {
+                if (shouldRefill(lastTickHotbar[hbSlot], inventory.getItem(hbSlot))) {
+                    int slot = findSameItem(inventory, lastTickHotbar[hbSlot]);
+                    if (slot > 0) {
+                        InventoryUtils.addItemStack(new InventorySlot(slot), new InventorySlot(hbSlot));
+                    }
+                }
+            }
+        }
+
+        if (config.refillSlotOffhand && !lastTickOffhand.isEmpty()) {
+            if (shouldRefill(lastTickOffhand, mc.player.getOffhandItem())) {
+                int slot = findSameItem(inventory, lastTickOffhand);
+                if (slot > 0) {
+                    InventoryUtils.addItemStack(new InventorySlot(slot), new InventorySlot(EquipmentSlot.OFFHAND));
+                }
+            }
+        }
+
+        for (int i = 0; i < 9; i++) {
+            lastTickHotbar[i] = inventory.getItem(i).copy();
+        }
+        lastTickOffhand = mc.player.getOffhandItem().copy();
+    }
+
+    private void clear() {
+        for (int i = 0; i < 9; i++) {
+            lastTickHotbar[i] = ItemStack.EMPTY;
+        }
+        lastTickOffhand = ItemStack.EMPTY;
+    }
+
+    private boolean shouldRefill(ItemStack oldItemStack, ItemStack newItemStack) {
+        return newItemStack.isEmpty() || (newItemStack.is(oldItemStack.getItem()) && newItemStack.getCount() <= oldItemStack.getMaxStackSize() / 2);
+    }
+
+    private int findSameItem(Inventory inventory, ItemStack search) {
+        for (int i = 9; i < 36; i++) {
+            ItemStack itemStack = inventory.getItem(i);
+            if (itemStack.isEmpty()) {
+                continue;
+            }
+
+            if (ItemStack.isSameItemSameComponents(itemStack, search)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+}

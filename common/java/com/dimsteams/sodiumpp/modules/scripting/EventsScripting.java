@@ -1,0 +1,248 @@
+package com.dimsteams.sodiumpp.modules.scripting;
+
+import com.dimsteams.sodiumpp.common.Events;
+import com.dimsteams.sodiumpp.concurrent.TickEndExecutor;
+import com.dimsteams.sodiumpp.configs.ConfigStore;
+import com.dimsteams.sodiumpp.controllers.NetworkPacketsController;
+import com.dimsteams.sodiumpp.modules.Module;
+import com.dimsteams.sodiumpp.scripting.events.*;
+import com.dimsteams.sodiumpp.scripting.modules.PacketEvent;
+import com.dimsteams.sodiumpp.scripting.modules.PlayerMessageSendingEvent;
+import com.dimsteams.sodiumpp.scripting.types.ComponentWrapper;
+import com.dimsteams.sodiumpp.scripting.types.PlayerInfoWrapper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.server.IntegratedServer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+public class EventsScripting implements Module {
+
+    public static final EventsScripting instance = new EventsScripting();
+
+    private final Minecraft mc = Minecraft.getInstance();
+    private final List<Runnable> onHandleKeys = new ArrayList<>();
+    private final List<Runnable> onTickEnd = new ArrayList<>();
+    private final List<Runnable> onMenuTickEnd = new ArrayList<>();
+    private final List<EntityIdConsumer> onPlayerAdded = new ArrayList<>();
+    private final List<EntityIdConsumer> onPlayerRemoved = new ArrayList<>();
+    private final List<ComponentWrapperConsumer> onChatMessageRaw = new ArrayList<>();
+    private final List<ChatMessageConsumer> onChatMessage = new ArrayList<>();
+    private final List<PlayerMessageSendingConsumer> onPlayerMessageSending = new ArrayList<>();
+    private final List<ServerInformationConsumer> onJoinServer = new ArrayList<>();
+    private final List<ContainerClickConsumer> onContainerMenuClick = new ArrayList<>();
+    private final List<PlayerInfoUpdateConsumer> onPlayerInfoUpdate = new ArrayList<>();
+    private final List<PacketEventConsumer> onC2SPacket = new ArrayList<>();
+    private final List<PacketEventConsumer> onS2CPacket = new ArrayList<>();
+
+    private final Consumer<NetworkPacketsController.ClientPacketArgs> onClientPacketHandler = this::onClientPacket;
+    private final Consumer<NetworkPacketsController.ServerPacketArgs> onServerPacketHandler = this::onServerPacket;
+
+    private EventsScripting() {
+        Events.BeforeHandleKeyBindings.add(() -> {
+            if (canTrigger()) {
+                for (Runnable handler : onHandleKeys) {
+                    handler.run();
+                }
+            }
+        });
+
+        Events.ClientTickEnd.add(() -> {
+            if (canTrigger()) {
+                for (Runnable handler : onTickEnd) {
+                    handler.run();
+                }
+            }
+        });
+
+        Events.ClientTickEnd.add(() -> {
+            if (mc.player == null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled) {
+                for (Runnable handler : onMenuTickEnd) {
+                    handler.run();
+                }
+            }
+        });
+
+        Events.EntityAdded.add(entity -> {
+            if (canTrigger() && entity instanceof RemotePlayer) {
+                for (EntityIdConsumer consumer : onPlayerAdded) {
+                    consumer.accept(entity.getId());
+                }
+            }
+        });
+
+        Events.EntityRemoved.add(entity -> {
+            if (canTrigger() && entity instanceof RemotePlayer) {
+                for (EntityIdConsumer consumer : onPlayerRemoved) {
+                    consumer.accept(entity.getId());
+                }
+            }
+        });
+
+        Events.ChatMessageAdded.add(component -> {
+            if (canTrigger()) {
+                ComponentWrapper wrapper = new ComponentWrapper(component);
+                for (ComponentWrapperConsumer consumer : onChatMessageRaw) {
+                    consumer.accept(wrapper);
+                }
+                String text = component.getString();
+                for (ChatMessageConsumer consumer : onChatMessage) {
+                    consumer.accept(text);
+                }
+            }
+        });
+
+        Events.SendChat.add(event -> {
+            if (canTrigger()) {
+                for (PlayerMessageSendingConsumer consumer : onPlayerMessageSending) {
+                    PlayerMessageSendingEvent sendingEvent = new PlayerMessageSendingEvent(event.getMessage());
+                    consumer.consume(sendingEvent);
+                    if (sendingEvent.cancel) {
+                        event.cancel();
+                        break;
+                    }
+                }
+            }
+        });
+
+        Events.ClientPlayerLoggingIn.add(connection -> {
+            if (ConfigStore.instance.getConfig().eventsScriptingConfig.enabled && !onJoinServer.isEmpty()) {
+                String address = connection == null ? "" : connection.getRemoteAddress().toString();
+                IntegratedServer integratedServer = mc.getSingleplayerServer();
+                ServerInformation info = new ServerInformation(address, integratedServer);
+                for (ServerInformationConsumer consumer : onJoinServer) {
+                    consumer.accept(info);
+                }
+            }
+        });
+
+        Events.ContainerMenuClick.add(event -> {
+            if (canTrigger()) {
+                for (ContainerClickConsumer consumer : onContainerMenuClick) {
+                    consumer.accept(event.slot(), event.button(), event.type().toString());
+                }
+            }
+        });
+
+        Events.PlayerInfoUpdated.add(event -> {
+            if (canTrigger()) {
+                for (PlayerInfoUpdateConsumer consumer : onPlayerInfoUpdate) {
+                    consumer.accept(new PlayerInfoWrapper(event.info()), event.type().toString());
+                }
+            }
+        });
+
+        NetworkPacketsController.instance.addClientPacketHandler(args -> {
+
+        });
+        NetworkPacketsController.instance.addServerPacketHandler(args -> {
+
+        });
+    }
+
+    public void setScript(Runnable runnable) {
+        clear();
+        if (runnable != null) {
+            TickEndExecutor.instance.execute(runnable);
+        }
+    }
+
+    public void clear() {
+        TickEndExecutor.instance.execute(() -> {
+            onHandleKeys.clear();
+            onTickEnd.clear();
+            onMenuTickEnd.clear();
+            onPlayerAdded.clear();
+            onPlayerRemoved.clear();
+            onChatMessageRaw.clear();
+            onChatMessage.clear();
+            onPlayerMessageSending.clear();
+            onJoinServer.clear();
+            onContainerMenuClick.clear();
+            onPlayerInfoUpdate.clear();
+            onC2SPacket.clear();
+            onS2CPacket.clear();
+
+            NetworkPacketsController.instance.removeClientPacketHandler(onClientPacketHandler);
+            NetworkPacketsController.instance.removeServerPacketHandler(onServerPacketHandler);
+        });
+    }
+
+    public void addOnHandleKeys(Runnable action) {
+        onHandleKeys.add(action);
+    }
+
+    public void addOnTickEnd(Runnable action) {
+        onTickEnd.add(action);
+    }
+
+    public void addOnMenuTickEnd(Runnable action) {
+        onMenuTickEnd.add(action);
+    }
+
+    public void addOnPlayerAdded(EntityIdConsumer consumer) {
+        onPlayerAdded.add(consumer);
+    }
+
+    public void addOnPlayerRemoved(EntityIdConsumer consumer) {
+        onPlayerRemoved.add(consumer);
+    }
+
+    public void addOnChatMessageRaw(ComponentWrapperConsumer consumer) {
+        onChatMessageRaw.add(consumer);
+    }
+
+    public void addOnChatMessage(ChatMessageConsumer consumer) {
+        onChatMessage.add(consumer);
+    }
+
+    public void addOnPlayerMessageSending(PlayerMessageSendingConsumer consumer) {
+        onPlayerMessageSending.add(consumer);
+    }
+
+    public void addOnJoinServer(ServerInformationConsumer consumer) {
+        onJoinServer.add(consumer);
+    }
+
+    public void addOnContainerMenuClick(ContainerClickConsumer consumer) {
+        onContainerMenuClick.add(consumer);
+    }
+
+    public void addOnPlayerInfoUpdate(PlayerInfoUpdateConsumer consumer) {
+        onPlayerInfoUpdate.add(consumer);
+    }
+
+    public void addOnClientToServerPacket(PacketEventConsumer consumer) {
+        onC2SPacket.add(consumer);
+        NetworkPacketsController.instance.addClientPacketHandlerIfAbsent(onClientPacketHandler);
+    }
+
+    public void addOnServerToClientPacket(PacketEventConsumer consumer) {
+        onS2CPacket.add(consumer);
+        NetworkPacketsController.instance.addServerPacketHandlerIfAbsent(onServerPacketHandler);
+    }
+
+    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
+        if (canTrigger()) {
+            PacketEvent event = new PacketEvent(args.packet);
+            for (PacketEventConsumer consumer : onC2SPacket) {
+                consumer.accept(event);
+            }
+        }
+    }
+
+    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+        if (canTrigger()) {
+            PacketEvent event = new PacketEvent(args.packet);
+            for (PacketEventConsumer consumer : onS2CPacket) {
+                consumer.accept(event);
+            }
+        }
+    }
+
+    private boolean canTrigger() {
+        return mc.player != null && ConfigStore.instance.getConfig().eventsScriptingConfig.enabled;
+    }
+}

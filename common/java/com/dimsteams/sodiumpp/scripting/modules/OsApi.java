@@ -1,0 +1,72 @@
+package com.dimsteams.sodiumpp.scripting.modules;
+
+import com.dimsteams.sodiumpp.scripting.AdvancedApi;
+import com.dimsteams.sodiumpp.scripting.CurseForgeRestricted;
+import com.dimsteams.scripting.MethodDescription;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+
+@AdvancedApi
+public class OsApi {
+
+    public final FilesApi files = new FilesApi();
+
+    @CurseForgeRestricted
+    @MethodDescription("""
+            Starts external program and returns exit code
+            """)
+    public CompletableFuture<Integer> execute(String path) {
+        return OsApiCurseForgeExcluded.execute(path);
+    }
+
+    @CurseForgeRestricted
+    @MethodDescription("""
+            Starts external program and returns exit code
+            """)
+    public CompletableFuture<Integer> execute(String path, String[] arguments) {
+        return OsApiCurseForgeExcluded.execute(path, arguments);
+    }
+
+    @SuppressWarnings("unused")
+    @AdvancedApi
+    public static class FilesApi {
+
+        public String[] readAllLines(String path) {
+            try {
+                return Files.readAllLines(Path.of(path)).toArray(String[]::new);
+            } catch (IOException e) {
+                return new String[0];
+            }
+        }
+
+        public String readAllText(String path) {
+            try {
+                return Files.readString(Path.of(path));
+            } catch (IOException e) {
+                return "";
+            }
+        }
+
+        public boolean writeAllLines(String path, String[] lines) {
+            try {
+                Files.write(Path.of(path), Arrays.stream(lines).toList());
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        public boolean writeAllText(String path, String text) {
+            try {
+                Files.writeString(Path.of(path), text);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+    }
+}

@@ -1,0 +1,40 @@
+package com.dimsteams.sodiumpp.scripting.types.nbt;
+
+import com.dimsteams.scripting.Getter;
+import com.dimsteams.scripting.type.CustomType;
+import net.minecraft.nbt.DoubleTag;
+
+@CustomType(name = "DoubleTag")
+public class DoubleTagWrapper extends TagWrapper {
+
+    private final DoubleTag inner;
+
+    DoubleTagWrapper(DoubleTag tag) {
+        this.inner = tag;
+    }
+
+    @Getter(name = "value")
+    public double getValue() {
+        return inner.value();
+    }
+
+    @Override
+    public int getIntOr(int defaultValue) {
+        return inner.intValue();
+    }
+
+    @Override
+    public long getLongOr(long defaultValue) {
+        return inner.longValue();
+    }
+
+    @Override
+    public double getFloatOr(double defaultValue) {
+        return inner.value();
+    }
+
+    @Override
+    public String toString() {
+        return inner.toString();
+    }
+}

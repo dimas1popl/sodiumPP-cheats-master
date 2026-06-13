@@ -1,0 +1,13 @@
+package com.dimsteams.sodiumpp.configs;
+
+public class BlockAutomationConfig extends BlockPlacerConfig {
+
+    public String code;
+    public boolean debugMode;
+
+    @Override
+    public void copyTo(BlockAutomationConfig other) {
+        super.copyTo(other);
+        other.debugMode = debugMode;
+    }
+}

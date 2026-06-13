@@ -1,0 +1,448 @@
+package com.dimsteams.sodiumpp.modules.automation;
+
+import com.dimsteams.sodiumpp.blocks.*;
+import com.dimsteams.sodiumpp.common.Events;
+import com.dimsteams.sodiumpp.common.events.BlockUpdateEvent;
+import com.dimsteams.sodiumpp.configs.ConfigStore;
+import com.dimsteams.sodiumpp.configs.VillagerRollerConfig;
+import com.dimsteams.sodiumpp.controllers.NetworkPacketsController;
+import com.dimsteams.sodiumpp.modules.Module;
+import com.dimsteams.sodiumpp.utils.EntityInteraction;
+import com.dimsteams.sodiumpp.utils.EntityInteractionPlan;
+import com.dimsteams.sodiumpp.utils.EntityInteractionResult;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.level.block.Blocks;
+
+import java.util.concurrent.CompletableFuture;
+
+public class VillagerRoller implements Module {
+
+    public static final VillagerRoller instance = new VillagerRoller();
+
+    private final Minecraft mc = Minecraft.getInstance();
+    private boolean active;
+    private State state = State.STOPPED;
+    private volatile BlockPos pos;
+    private volatile boolean lecternPlaced;
+    private volatile boolean lecternDestroyed;
+    private volatile MerchantOffers offers;
+    private CompletableFuture<Void> applyFuture;
+    private CompletableFuture<EntityInteractionResult> interactFuture;
+    private int villagerId;
+    private int slot;
+    private String stopReason;
+    private String enchantmentId;
+    private String enchantmentName;
+    private int level;
+    private int price;
+    private boolean curse;
+    private int maxLevel;
+    private int minPrice;
+    private int maxPrice;
+    private Runnable script;
+
+    private VillagerRoller() {
+        Events.ClientTickEnd.add(this::onClientTickEnd);
+        Events.RawBlockUpdated.add(this::onBlockChanged);
+        Events.EntityInteract.add(this::onEntityInteract);
+        Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
+        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void start() {
+        if (!active) {
+            active = true;
+            state = State.SETUP_WAITING_FOR_LECTERN_PLACE;
+            pos = null;
+            lecternPlaced = false;
+            lecternDestroyed = false;
+            applyFuture = null;
+            offers = null;
+            stopReason = null;
+        }
+    }
+
+    public void stop() {
+        stop("Requested by user");
+    }
+
+    public void toggle() {
+        if (active) {
+            stop();
+        } else {
+            start();
+        }
+    }
+
+    public String getStopReason() {
+        return stopReason;
+    }
+
+    public void resetStopReason() {
+        stopReason = null;
+    }
+
+    public String getState() {
+        return state.toString();
+    }
+
+    public void setScript(Runnable script) {
+        this.script = script;
+    }
+
+    public boolean isBreakingBlock() {
+        return active && state == State.BREAKING_LECTERN_PROGRESS;
+    }
+
+    public String getEnchantmentId() {
+        return enchantmentId;
+    }
+
+    public String getEnchantmentName() {
+        return enchantmentName;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public int getMaxLevel() {
+        return maxLevel;
+    }
+
+    public int getMinPrice() {
+        return minPrice;
+    }
+
+    public int getMaxPrice() {
+        return maxPrice;
+    }
+
+    public boolean isCurse() {
+        return curse;
+    }
+
+    private void onClientTickEnd() {
+        if (!active) {
+            return;
+        }
+
+        if (mc.level == null) {
+            return;
+        }
+
+        if (mc.player == null) {
+            return;
+        }
+
+        if (mc.gameMode == null) {
+            return;
+        }
+
+        while (true) {
+            switch (state) {
+                case STOPPED, SETUP_WAITING_FOR_VILLAGER_INTERACT -> {
+                    return;
+                }
+
+                case SETUP_WAITING_FOR_LECTERN_PLACE -> {
+                    if (lecternPlaced) {
+                        lecternPlaced = false;
+                        state = State.SETUP_WAITING_FOR_VILLAGER_INTERACT;
+                    }
+                    return;
+                }
+
+                case SETUP_WAITING_FOR_LECTERN_BREAK -> {
+                    if (lecternDestroyed) {
+                        lecternDestroyed = false;
+                        slot = mc.player.getInventory().getSelectedSlot();
+                        state = State.WAITING_FOR_PROFESSION_LOSE;
+                    }
+                    return;
+                }
+
+                case WAITING_FOR_PROFESSION_LOSE -> {
+                    mc.gameMode.stopDestroyBlock();
+                    Entity entity = mc.level.getEntity(villagerId);
+                    if (entity == null) {
+                        stop("Selected villager no longer exists");
+                        return;
+                    }
+                    if (entity instanceof Villager villager) {
+                        if (villager.getVillagerData().profession().is(VillagerProfession.NONE)) {
+                            state = State.PLACING_LECTERN;
+                        } else {
+                            return;
+                        }
+                    } else {
+                        stop("Selected villager is not a villager anymore. LOL");
+                        return;
+                    }
+                }
+
+                case PLACING_LECTERN -> {
+                    Inventory inventory = mc.player.getInventory();
+                    int lecternSlot = -1;
+                    for (int i = 0; i < 9; i++) {
+                        if (inventory.getItem(i).is(Items.LECTERN)) {
+                            lecternSlot = i;
+                            break;
+                        }
+                    }
+
+                    if (lecternSlot >= 0) {
+                        double reachDistance = mc.player.blockInteractionRange();
+                        if (pos.distToCenterSqr(mc.player.getEyePosition()) > reachDistance * reachDistance) {
+                            // player too far
+                            return;
+                        }
+
+                        BlockPlacePlan plan = BlockPlacer.createPlan(
+                                Blocks.LECTERN.defaultBlockState(),
+                                pos,
+                                BlockPlacingMethod.ANY,
+                                getConfig());
+                        if (plan == null) {
+                            return;
+                        }
+
+                        inventory.setSelectedSlot(lecternSlot);
+                        applyFuture = plan.apply();
+
+                        state = State.WAITING_FOR_LECTERN_BLOCK_UPDATE;
+                    }
+                    return;
+                }
+
+                case WAITING_FOR_LECTERN_BLOCK_UPDATE -> {
+                    if (applyFuture != null && applyFuture.isDone()) {
+                        applyFuture = null;
+                    }
+                    if (applyFuture == null && lecternPlaced) {
+                        lecternPlaced = false;
+                        state = State.WAITING_FOR_PROFESSION_GAIN;
+                    }
+                    return;
+                }
+
+                case WAITING_FOR_PROFESSION_GAIN -> {
+                    if (interactFuture != null) {
+                        if (interactFuture.isDone()) {
+                            if (interactFuture.resultNow().isSuccess()) {
+                                offers = null;
+                                state = State.WAITING_FOR_TRADE_MENU;
+                            }
+                            interactFuture = null;
+                        }
+                    } else {
+                        Entity entity = mc.level.getEntity(villagerId);
+                        if (entity == null) {
+                            stop("Selected villager no longer exists");
+                            return;
+                        }
+                        if (entity instanceof Villager villager) {
+                            if (villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN)) {
+                                EntityInteractionPlan plan = EntityInteraction.interact(villager, getConfig());
+                                interactFuture = plan.apply();
+
+                            }
+                        } else {
+                            stop("Selected villager is not a villager anymore. LOL");
+                        }
+                    }
+                    return;
+                }
+
+                case WAITING_FOR_TRADE_MENU -> {
+                    if (offers == null) {
+                        return;
+                    }
+
+                    MerchantOffer offer = this.offers.stream()
+                            .filter(o -> o.getResult().is(Items.ENCHANTED_BOOK))
+                            .findFirst()
+                            .orElse(null);
+                    this.offers = null;
+
+                    if (offer == null) {
+                        // no enchanted book in trades
+                        state = State.START_BREAKING_LECTERN;
+                        continue;
+                    }
+
+                    ItemEnchantments enchantments = offer.getResult().get(DataComponents.STORED_ENCHANTMENTS);
+                    if (enchantments == null || enchantments.isEmpty()) {
+                        stop("EnchantedBook with 0 enchantments");
+                        return;
+                    }
+
+                    Enchantment enchantment = enchantments.keySet().stream().findFirst().get().value();
+                    HolderLookup<Enchantment> lookup = mc.level.holderLookup(Registries.ENCHANTMENT);
+                    Holder.Reference<Enchantment> holder = lookup.listElements().filter(ref -> ref.value() == enchantment).findFirst().get();
+
+                    this.enchantmentId = holder.key().identifier().toString();
+                    this.enchantmentName = enchantment.description().getString();
+                    this.level = enchantments.getLevel(holder);
+                    this.price = offer.getBaseCostA().getCount();
+
+                    this.maxLevel = enchantment.getMaxLevel();
+                    this.curse = holder.is(EnchantmentTags.CURSE);
+
+                    // look at VillagerTrades.EnchantBookForEmeralds.getOffer
+                    this.minPrice = 2 + this.level * 3;
+                    this.maxPrice = 6 + this.level * 13;
+                    if (holder.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
+                        this.minPrice *= 2;
+                        this.maxPrice *= 2;
+                    }
+                    this.minPrice = Math.min(this.minPrice, 64);
+                    this.maxPrice = Math.min(this.maxPrice, 64);
+
+                    Runnable script = this.script;
+                    if (script != null) {
+                        script.run();
+                    }
+
+                    if (!active) {
+                        return;
+                    }
+
+                    state = State.START_BREAKING_LECTERN;
+                }
+
+                case START_BREAKING_LECTERN -> {
+                    if (mc.level.getBlockState(pos).is(Blocks.LECTERN)) {
+                        mc.player.getInventory().setSelectedSlot(slot);
+                        BlockBreakPlan plan = BlockBreaker.createPlan(pos, getConfig());
+                        if (plan != null) {
+                            applyFuture = plan.apply();
+                            state = State.BREAKING_LECTERN_PROGRESS;
+                        }
+                    }
+                    return;
+                }
+
+                case BREAKING_LECTERN_PROGRESS -> {
+                    if (applyFuture != null && applyFuture.isDone()) {
+                        applyFuture = null;
+                        state = State.WAITING_FOR_LECTERN_BREAK;
+                    }
+                    return;
+                }
+
+                case WAITING_FOR_LECTERN_BREAK -> {
+                    if (lecternDestroyed) {
+                        lecternDestroyed = false;
+                        state = State.WAITING_FOR_PROFESSION_LOSE;
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+        if (!active) {
+            return;
+        }
+
+        if (args.packet instanceof ClientboundOpenScreenPacket packet) {
+            if (packet.getType() == MenuType.MERCHANT) {
+                args.skip = true;
+            }
+        }
+
+        if (args.packet instanceof ClientboundMerchantOffersPacket packet) {
+            args.skip = true;
+            offers = packet.getOffers();
+            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(packet.getContainerId()));
+        }
+    }
+
+    private void onBlockChanged(BlockUpdateEvent event) {
+        if (active) {
+            if (state == State.SETUP_WAITING_FOR_LECTERN_PLACE && event.state().getBlock() == Blocks.LECTERN) {
+                pos = event.pos();
+                lecternPlaced = true;
+                return;
+            }
+
+            if (event.pos().equals(pos)) {
+                if (event.state().isAir()) {
+                    lecternDestroyed = true;
+                }
+                if (event.state().getBlock() == Blocks.LECTERN) {
+                    lecternPlaced = true;
+                }
+            }
+        }
+    }
+
+    private void onEntityInteract(Entity entity) {
+        if (active && state == State.SETUP_WAITING_FOR_VILLAGER_INTERACT) {
+            if (entity instanceof Villager) {
+                villagerId = entity.getId();
+                state = State.SETUP_WAITING_FOR_LECTERN_BREAK;
+            }
+        }
+    }
+
+    private void onPlayerLoggingOut() {
+        stop("Logout");
+    }
+
+    private void stop(String reason) {
+        if (active) {
+            stopReason = reason;
+            state = State.STOPPED;
+            active = false;
+        }
+    }
+
+    private VillagerRollerConfig getConfig() {
+        return ConfigStore.instance.getConfig().villagerRollerConfig;
+    }
+
+    private enum State {
+        STOPPED,
+        SETUP_WAITING_FOR_LECTERN_PLACE,
+        SETUP_WAITING_FOR_VILLAGER_INTERACT,
+        SETUP_WAITING_FOR_LECTERN_BREAK,
+        WAITING_FOR_PROFESSION_LOSE,
+        PLACING_LECTERN,
+        WAITING_FOR_LECTERN_BLOCK_UPDATE,
+        WAITING_FOR_PROFESSION_GAIN,
+        WAITING_FOR_TRADE_MENU,
+        START_BREAKING_LECTERN,
+        BREAKING_LECTERN_PROGRESS,
+        WAITING_FOR_LECTERN_BREAK
+    }
+}

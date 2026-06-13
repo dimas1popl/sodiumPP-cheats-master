@@ -1,0 +1,23 @@
+package com.dimsteams.sodiumpp.webui;
+
+import com.dimsteams.sodiumpp.controllers.ClientTickController;
+import net.minecraft.client.Minecraft;
+
+public class DimensionApi extends ApiBase {
+
+    @Override
+    public String getRoute() {
+        return "dimension";
+    }
+
+    @Override
+    public String get() {
+        return gson.toJson(ClientTickController.instance.getResult(() -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level == null) {
+                return null;
+            }
+            return mc.level.dimension().identifier().toString();
+        }, 1000));
+    }
+}

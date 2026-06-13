@@ -1,0 +1,17 @@
+package com.dimsteams.sodiumpp.font;
+
+public enum FontRendererType {
+    AWT(new AwtFontFactory()),
+    STB(new StbFontFactory()),
+    VANILLA(new VanillaFontFactory());
+
+    private final FontFactory factory;
+
+    FontRendererType(FontFactory factory) {
+        this.factory = factory;
+    }
+
+    public FontFactory getFactory() {
+        return factory;
+    }
+}

@@ -1,0 +1,20 @@
+{
+  "required": false,
+  "minVersion": "0.8.7",
+  "package": "com.dimsteams.sodiumpp.mixins",
+  "compatibilityLevel": "JAVA_25",
+  "injectors": {
+    "defaultRequire": 0
+  },
+  "mixinPriority": 500,
+  "client": [
+    "fabric.schematica.MixinSectionCompiler",
+    "fabric.MixinCamera",
+    "fabric.MixinGuiGraphics",
+    "fabric.MixinKeyboardHandler",
+    "fabric.MixinLevelRenderer",
+    "fabric.MixinMinecraft",
+    "fabric.MixinMultiPlayerGameMode",
+    "fabric.MixinScreen"
+  ]
+}

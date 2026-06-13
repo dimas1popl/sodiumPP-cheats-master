@@ -1,0 +1,49 @@
+package com.dimsteams.sodiumpp.configs;
+
+import com.dimsteams.sodiumpp.configs.adapters.GsonSkip;
+import com.dimsteams.sodiumpp.utils.MathUtils;
+
+import java.time.format.DateTimeFormatter;
+
+public class ChatUtilitiesConfig implements Sanitizable, ModuleStateProvider {
+
+    public boolean dontCloseChatOnEnter;
+    public boolean overrideMessageLimit;
+    public int messageLimit;
+    public boolean showTime;
+    public String timeFormat;
+
+    @GsonSkip
+    private DateTimeFormatter formatter;
+
+    public ChatUtilitiesConfig() {
+        messageLimit = 100;
+        timeFormat = "HH:mm:ss";
+    }
+
+    public DateTimeFormatter getFormatter() {
+        if (formatter == null) {
+            try {
+                formatter = DateTimeFormatter.ofPattern(timeFormat);
+            }
+            catch (IllegalArgumentException e) {
+                formatter = null;
+            }
+        }
+
+        return formatter;
+    }
+
+    @Override
+    public void sanitize() {
+        messageLimit = MathUtils.clamp(messageLimit, 20, 1000000);
+        if (getFormatter() == null) {
+            showTime = false;
+        }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return dontCloseChatOnEnter || overrideMessageLimit || showTime;
+    }
+}
